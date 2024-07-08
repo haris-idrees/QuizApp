@@ -1,0 +1,16 @@
+{% extends 'Student/base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <div>
+        <h1>Students</h1>
+        <a class="btn btn-primary" href="{% url 'students' %}">View</a>
+    </div>
+    <div>
+        <h1>Quizes</h1>
+        <a class="btn btn-primary" href="{% url 'quizes' %}">View</a>
+    </div>
+</div>
+
+{% endblock%}

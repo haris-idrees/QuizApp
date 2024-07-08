@@ -1,0 +1,48 @@
+{% extends 'Student/base.html' %}
+
+{% block content %}
+<h1>Create New Quiz</h1>
+
+<div class="container">
+    <form method="post">
+        {% csrf_token %}
+        {{ quizform.as_p }}
+
+        <h3>Questions</h3>
+        {{ formset.management_form }}
+        <div id="questions">
+            {% for form in formset %}
+                <div class="form-row">
+                    {{ form.as_p }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" id="add-question" class="btn btn-primary">Add Question</button>
+        <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+</div>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        var addButton = document.getElementById("add-question");
+        var totalForms = document.getElementById("id_form-TOTAL_FORMS");
+        var formContainer = document.getElementById("questions");
+        var formIndex = formContainer.children.length;
+
+        addButton.addEventListener("click", function () {
+            var newForm = formContainer.children[0].cloneNode(true);
+            var formRegex = RegExp(`form-(\\d){1}-`, 'g');
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formIndex}-`);
+
+            // Clear the input values
+            var inputs = newForm.querySelectorAll('input, textarea');
+            inputs.forEach(input => input.value = '');
+
+            formContainer.appendChild(newForm);
+            totalForms.value = formIndex + 1;
+            formIndex++;
+        });
+    });
+</script>
+{% endblock %}

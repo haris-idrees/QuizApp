@@ -1,0 +1,30 @@
+{% extends 'Student/base.html' %}
+
+{% block content %}
+
+<style>
+    .row{
+        display: flex;
+        flex-direction:row;
+    }
+
+</style>
+<H1> DashBoard </H1>
+
+<div class="container">
+    <h3>Welcome {{ student.username }}</h3>
+    <h4>Assigned Quizes</h4>
+    {% for quiz in quizes %}
+        <div class="row>">
+            <div class="col">
+                <p>{{ quiz.title }}</p>
+            </div>
+            <div class="col">
+                <a href="" class="btn btn-success">Attempt Quiz</a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

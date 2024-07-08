@@ -1,0 +1,90 @@
+{% extends 'Student/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ quiz.title }}</h1>
+    <p><strong>Difficulty Level:</strong> {{ quiz.get_difficulty_level_display }}</p>
+    <p><strong>Total Score:</strong> {{ quiz.Total_score }}</p>
+
+    <h3>Questions:</h3>
+    <ul class="question-list">
+        {% for question in questions %}
+        <li class="question-item">
+            <div class="question-statement">{{ question.question_statement }}</div>
+            <div class="question-details">
+                <p><strong>Type:</strong> {{ question.get_question_type_display }}</p>
+                <p><strong>Difficulty Level:</strong> {{ question.get_difficulty_level_display }}</p>
+                <p><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
+            </div>
+            <div class="question-details">
+                <strong>Answer Options:</strong>
+                {% for option in options %}
+                    <p>{{ option.option_text }}</p>
+                {% endfor %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="quiz-footer">
+        <a href="{% url 'quizes' %}" class="btn btn-primary">Back to Home</a>
+    </div>
+</div>
+
+<style>
+    /* Example styles for a professional look */
+    .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    .question-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .question-item {
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #fff;
+    }
+
+    .question-statement {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .question-details {
+        font-size: 14px;
+    }
+
+    .quiz-footer {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+{% endblock %}

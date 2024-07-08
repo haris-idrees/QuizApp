@@ -1,0 +1,86 @@
+{% extends 'Student/base.html' %}
+
+{% block content %}
+
+<h1>
+  Create New Question
+</h1>
+
+<div class="container">
+    <br>
+    <div>
+        <form method="post">
+            {% csrf_token %}
+
+            <label for="id_question_type">Question Type:</label>
+            <select name="question_type" id="id_question_type">
+                <option value="MCQ">Multiple Choice</option>
+                <option value="TF">True/False</option>
+                <option value="SA">Short Answer</option>
+            </select><br><br>
+
+            <label for="id_difficulty_level">Difficulty Level:</label>
+            <select name="difficulty_level" id="id_difficulty_level">
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+            </select><br><br>
+
+            <label for="id_question_statement">Question Statement:</label><br>
+            <textarea name="question_statement" id="id_question_statement" rows="2" cols="50"></textarea><br><br>
+
+            <label for="id_correct_answer">Correct Answer:</label><br>
+            <input type="text" name="correct_answer" id="id_correct_answer" maxlength="512"><br><br>
+
+
+            <label>Answer Choices:</label><br>
+            <div id="mcq-options" style="display: none;">
+                <input type="text" name="answer_choice" placeholder="Option 1"><br>
+                <input type="text" name="answer_choice" placeholder="Option 2"><br>
+                <input type="text" name="answer_choice" placeholder="Option 3"><br>
+                <input type="text" name="answer_choice" placeholder="Option 4"><br>
+            </div>
+
+            <div id="tf-options" style="display: none;">
+                <input type="radio" name="answer_choice" value="True"> True<br>
+                <input type="radio" name="answer_choice" value="False"> False<br>
+            </div>
+
+            <div id="sa-options" style="display: none;">
+                No options required for short answer.<br>
+            </div>
+
+            <br>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var questionTypeField = document.getElementById('id_question_type');
+        var mcqOptions = document.getElementById('mcq-options');
+        var tfOptions = document.getElementById('tf-options');
+        var saOptions = document.getElementById('sa-options');
+
+        function toggleOptions() {
+            mcqOptions.style.display = 'none';
+            tfOptions.style.display = 'none';
+            saOptions.style.display = 'none';
+
+            if (questionTypeField.value === 'MCQ') {
+                mcqOptions.style.display = 'block';
+            } else if (questionTypeField.value === 'TF') {
+                tfOptions.style.display = 'block';
+            } else if (questionTypeField.value === 'SA') {
+                saOptions.style.display = 'block';
+            }
+        }
+
+        questionTypeField.addEventListener('change', toggleOptions);
+        toggleOptions();
+    });
+</script>
+{% endblock%}

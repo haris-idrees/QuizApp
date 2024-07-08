@@ -1,0 +1,120 @@
+{% extends 'Student/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Create New Quiz</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="card-title">Quiz Details</h3>
+                {{ quizform.as_p }}
+            </div>
+        </div>
+
+        <h3>Questions</h3>
+        {{ formset.management_form }}
+        <div id="questions">
+            {% for form in formset %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        {{ form.id }}
+                        <div class="form-group">
+                            {{ form.question_statement.label_tag }}
+                            {{ form.question_statement }}
+                        </div>
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                {{ form.question_type.label_tag }}
+                                {{ form.question_type }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.difficulty_level.label_tag }}
+                                {{ form.difficulty_level }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            {{ form.correct_answer.label_tag }}
+                            {{ form.correct_answer }}
+                        </div>
+
+                        <!-- Option formset for AnswerOptions -->
+                        {{ form.options.management_form }}
+                        <div class="option-formset">
+                            {% for option_form in form.options %}
+                                <div class="form-group">
+                                    {{ option_form.option_text.label_tag }}
+                                    {{ option_form.option_text }}
+                                </div>
+                            {% endfor %}
+                            <button type="button" class="btn btn-sm btn-primary add-option">Add Option</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" id="add-question" class="btn btn-primary mb-3">Add Question</button>
+        <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+</div>
+
+<style>
+    .card {
+        border: 1px solid #e2e2e2;
+        border-radius: 5px;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-row {
+        margin-bottom: 15px;
+    }
+
+    .option-formset {
+        margin-top: 10px;
+        padding-left: 20px;
+    }
+</style>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        var addButton = document.getElementById("add-question");
+        var formContainer = document.getElementById("questions");
+        var formIndex = formContainer.children.length;
+
+        addButton.addEventListener("click", function () {
+            var newForm = formContainer.children[0].cloneNode(true);
+            formIndex++;
+            var formRegex = RegExp(`form-(\\d){1}-`, 'g');
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formIndex}-`);
+            var inputs = newForm.querySelectorAll('input, textarea');
+            inputs.forEach(input => input.value = '');
+            formContainer.appendChild(newForm);
+            document.getElementById("id_form-TOTAL_FORMS").value = formIndex + 1;
+        });
+
+
+        formContainer.addEventListener("click", function (event) {
+            if (event.target.classList.contains("add-option")) {
+                var optionFormSet = event.target.closest(".option-formset");
+                var newOptionForm = optionFormSet.children[0].cloneNode(true);
+                var totalForms = optionFormSet.querySelectorAll(".form-group").length + 1;
+                var formRegex = RegExp(`form-(\\d){1}-`, 'g');
+                newOptionForm.innerHTML = newOptionForm.innerHTML.replace(formRegex, `form-${totalForms}-`);
+                var inputs = newOptionForm.querySelectorAll('input, textarea');
+                inputs.forEach(input => input.value = '');
+                optionFormSet.appendChild(newOptionForm);
+            }
+        });
+    });
+</script>
+{% endblock %}
