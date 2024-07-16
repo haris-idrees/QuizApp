@@ -87,6 +87,10 @@ h1 {
             <div class="list-group-item d-flex justify-content-between align-items-center">
                 <span class="quiz-title">{{ quiz.title }}</span>
                 <a class="btn btn-success btn-sm" href="{% url 'quiz_detail' pk=quiz.pk %}">View</a>
+                <form action="{% url 'quiz_delete' pk=quiz.pk %}" method="post" >
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">Delete</button>
+                </form>
             </div>
         {% endfor %}
     </div>

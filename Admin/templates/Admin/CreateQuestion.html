@@ -1,48 +1,91 @@
 {% extends 'Student/base.html' %}
 
 {% block content %}
-<h1>Create New Quiz</h1>
 
 <div class="container">
-    <form method="post">
+    <h1>Create Question</h1>
+    <form id="question-form" method="post">
         {% csrf_token %}
-        {{ quizform.as_p }}
-
-        <h3>Questions</h3>
-        {{ formset.management_form }}
-        <div id="questions">
+        {{ question_form.as_p }}
+        <div id="options_formset">
+            {{ formset.management_form }}
             {% for form in formset %}
-                <div class="form-row">
+                <div class="option-form">
                     {{ form.as_p }}
+                    <button type="button" class="remove-option">Remove</button>
                 </div>
             {% endfor %}
         </div>
-
-        <button type="button" id="add-question" class="btn btn-primary">Add Question</button>
-        <button type="submit" class="btn btn-success">Submit</button>
+        <button type="button" id="add-option">Add Option</button>
+        <button type="submit">Save</button>
     </form>
 </div>
+<script>
 
-<script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", function () {
-        var addButton = document.getElementById("add-question");
-        var totalForms = document.getElementById("id_form-TOTAL_FORMS");
-        var formContainer = document.getElementById("questions");
-        var formIndex = formContainer.children.length;
 
-        addButton.addEventListener("click", function () {
-            var newForm = formContainer.children[0].cloneNode(true);
-            var formRegex = RegExp(`form-(\\d){1}-`, 'g');
-            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formIndex}-`);
+document.addEventListener('DOMContentLoaded', function() {
+    let optionForms = document.querySelectorAll(".option-form");
+    let container = document.querySelector("#options_formset");
+    let addButton = document.querySelector("#add-option");
+    let totalForms = document.querySelector("#id_options-TOTAL_FORMS");
 
-            // Clear the input values
-            var inputs = newForm.querySelectorAll('input, textarea');
-            inputs.forEach(input => input.value = '');
+    if (!totalForms) {
+        console.error("Element with id 'id_options-TOTAL_FORMS' not found.");
+        return;
+    }
 
-            formContainer.appendChild(newForm);
-            totalForms.value = formIndex + 1;
-            formIndex++;
+    let formNum = optionForms.length - 1;
+    addButton.addEventListener('click', addForm);
+
+    function addForm(e) {
+        e.preventDefault();
+
+        let newForm = optionForms[0].cloneNode(true);
+        let formRegex = /options-(\d+)-/g;
+
+        formNum++;
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `options-${formNum}-`);
+
+        // Update the ID and name attributes of the new form fields
+        let formFields = newForm.querySelectorAll('input, select, textarea, label');
+        formFields.forEach(function(field) {
+            if (field.id) {
+                console.log(`Updating field id from ${field.id} to ${field.id.replace(formRegex, `options-${formNum}-`)}`);
+                field.id = field.id.replace(formRegex, `options-${formNum}-`);
+            }
+            if (field.name) {
+                console.log(`Updating field name from ${field.name} to ${field.name.replace(formRegex, `options-${formNum}-`)}`);
+                field.name = field.name.replace(formRegex, `options-${formNum}-`);
+            }
+            if (field.htmlFor) { // Update label 'for' attributes
+                console.log(`Updating label for from ${field.htmlFor} to ${field.htmlFor.replace(formRegex, `options-${formNum}-`)}`);
+                field.htmlFor = field.htmlFor.replace(formRegex, `options-${formNum}-`);
+            }
         });
+
+        // Add remove button event listener
+        newForm.querySelector('.remove-option').addEventListener('click', removeForm);
+
+        container.appendChild(newForm);
+
+        totalForms.setAttribute('value', `${formNum + 1}`);
+    }
+
+    function removeForm(e) {
+        e.preventDefault();
+        let formToRemove = e.target.closest('.option-form');
+        formToRemove.remove();
+
+        // Update total forms count
+        let currentForms = document.querySelectorAll('.option-form').length;
+        totalForms.setAttribute('value', `${currentForms}`);
+    }
+
+    // Add remove event listeners to initial forms
+    optionForms.forEach(function(form) {
+        form.querySelector('.remove-option').addEventListener('click', removeForm);
     });
+});
 </script>
+
 {% endblock %}

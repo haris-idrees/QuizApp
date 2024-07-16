@@ -1,15 +1,13 @@
 from django.shortcuts import render, redirect
 from Student.models import Student, Admin
 from .models import Question, Quiz, AnswerOptions
-from django.contrib.auth.models import User
-from rest_framework.views import APIView
 from django.contrib.auth import login
 from django.views import View
 from django.contrib.auth.decorators import login_required
-from rest_framework.viewsets import ModelViewSet
 from django.http import HttpResponse
-from .forms import QuestionForm, QuizForm, QuestionFormSet, AnswerOptionFormSet
-from django.forms import formset_factory, inlineformset_factory
+from .forms import QuestionForm, QuizForm, QuestionFormSet, AnswerOptionForm, AnswerOptionFormSet
+from django.views.generic import TemplateView
+from django.shortcuts import get_object_or_404
 
 
 class AdminLogin(View):
@@ -36,7 +34,6 @@ class AdminLogin(View):
         return render(request, 'Admin/AdminLogin.html', {"error": error})
 
 
-
 @login_required()
 def home(request):
     return render(request, 'Admin/Home.html')
@@ -56,9 +53,6 @@ def Quizes(request):
         return render(request, 'Admin/Quizes.html', {'quizes': quizes})
     else:
         return redirect('adminhome')
-
-
-from django.shortcuts import get_object_or_404
 
 
 class Quiz_detail(View):
@@ -81,14 +75,14 @@ class Quiz_detail(View):
         pass
 
 
-class createQuiz(View):
+class CreateQuiz(View):
     def get(self, request):
         if request.user.is_authenticated:
-            quizform = QuizForm()
-            formset = QuestionFormSet()
+            quiz_form = QuizForm()
+            question_formset = QuestionFormSet(prefix='questions')
             return render(request, 'Admin/CreateQuiz.html', {
-                'quizform': quizform,
-                'formset': formset
+                'quizform': quiz_form,
+                'question_formset': question_formset
             })
         else:
             return redirect('adminhome')
@@ -98,36 +92,18 @@ class createQuiz(View):
         if quiz_form.is_valid():
             print("Quiz form is valid")
             quiz = quiz_form.save(commit=False)
-            quiz.save()
-            quiz_form.save_m2m()  # Save the many-to-many relationships
 
-            question_formset = QuestionFormSet(request.POST, instance=quiz)
+            question_formset = QuestionFormSet(request.POST, instance=quiz, prefix='questions')
             if question_formset.is_valid():
                 print("Question formset is valid")
+                quiz.save()
                 questions = question_formset.save(commit=False)
                 for question in questions:
                     question.quiz = quiz
                     question.save()
 
-                question_formset.save_m2m()
-
-                for question in questions:
-                    prefix = f'question-{question.id}'
-
-                    answer_option_formset = AnswerOptionFormSet(request.POST, instance=question, prefix=prefix)
-
-                    print("Answer option formset is valid")
-                    answer_option_formset.save()
-                    # else:
-                    #     print("Answer option formset is not valid")
-                    #     print(answer_option_formset.errors)
-                    #     return render(request, 'Admin/CreateQuiz.html', {
-                    #         'quizform': quiz_form,
-                    #         'formset': question_formset,
-                    #         'errors': answer_option_formset.errors,
-                    #     })
-
                 return redirect('quizes')
+
             else:
                 print("Question formset is not valid")
                 return render(request, 'Admin/CreateQuiz.html', {
@@ -138,29 +114,38 @@ class createQuiz(View):
             print("Quiz form is not valid")
             print(quiz_form.errors.as_data())
             return render(request, 'Admin/CreateQuiz.html', {
-                'quizform': quiz_form,
-                'formset': QuestionFormSet(),
+                'quizform': quiz_form
             })
 
 
-# class CreateQuestion(View):
-#     def get(self, request):
-#         if request.user.is_authenticated:
-#             question_form = QuestionForm()
-#             formset = OptionFormSet()
-#             return render(request, 'Admin/CreateQuestion.html', {'question_form': question_form, 'formset': formset})
-#         else:
-#             return redirect('adminhome')
-#
-#     def post(self, request):
-#         question_form = QuestionForm(request.POST)
-#         formset = OptionFormSet(request.POST)
-#         if question_form.is_valid() and formset.is_valid():
-#             question = question_form.save()
-#             formset.instance = question
-#             formset.save()
-#             return redirect('createQuiz')
-#         return render(request, 'Admin/CreateQuestion.html', {'question_form': question_form, 'formset': formset})
+class CreateQuestion(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            question_form = QuestionForm()
+            formset = AnswerOptionFormSet()
+            return render(request, 'Admin/CreateQuestion.html', {'question_form': question_form, 'formset': formset})
+        else:
+            return redirect('adminhome')
+
+    def post(self, request):
+        print(request.POST)
+        question_form = QuestionForm(request.POST)
+
+        if question_form.is_valid():
+            question = question_form.save(commit=False)
+            quiz = Quiz.objects.get(id=1)
+            question.quiz = quiz
+            question.save()
+
+            formset = AnswerOptionFormSet(data=self.request.POST, instance=question)
+            if formset.is_valid():
+                formset.save()
+                return redirect('quizes')
+        else:
+            return render(
+                request,
+                'Admin/CreateQuestion.html',
+                {'question_form': question_form})
 
         # ques_type = request.POST.get('question_type')
         # diff_level = request.POST.get('difficulty_level')
@@ -181,3 +166,34 @@ class createQuiz(View):
         # )
         #
         # return redirect(createQuiz)
+
+
+class Quiz_Delete(View):
+    def post(self, request, pk):
+        if request.user.is_authenticated:
+            quiz = get_object_or_404(Quiz, pk=pk)
+            quiz.delete()
+            return redirect('quizes')
+        else:
+            return redirect('adminhome')
+
+
+# Testing code
+
+class AddOption(TemplateView):
+    template_name = "Admin/CreateQuestion.html"
+
+    def get(self, *args, **kwargs):
+        formset = AnswerOptionFormSet(queryset=AnswerOptions.objects.none())
+        return self.render_to_response({'formset': formset})
+
+    def post(self, *args, **kwargs):
+        formset = AnswerOptionFormSet(data=self.request.POST)
+        if formset.is_valid():
+            options = formset.save(commit=False)
+            for option in options:
+                option.question = Question.objects.get(id=1)
+                option.save()
+            return HttpResponse("Option added successfully")
+
+        return self.render_to_response({'formset': formset})

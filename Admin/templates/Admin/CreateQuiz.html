@@ -1,99 +1,92 @@
 {% extends 'Student/base.html' %}
 
 {% block content %}
+
 <div class="container">
-
-    {% if errors %}
-        <p style="color: red;">{{ errors }}</p>
-    {% endif %}
-
-    <h1>Create New Quiz</h1>
-
-    <form method="post">
+    <h1>Create Quiz</h1>
+    <form id="quiz-form" method="post">
         {% csrf_token %}
-
-        <div>
-            <h3>Quiz Details</h3>
-            {{ quizform.as_p }}
-        </div>
-
-        <h3>Questions</h3>
-        {{ formset.management_form }}
-        <div id="questions">
-            {% for form in formset %}
-                <div>
-                    {{ form.id }}
-                    <div>
-                        {{ form.question_statement.label_tag }}
-                        {{ form.question_statement }}
-                    </div>
-                    <div>
-                        {{ form.question_type.label_tag }}
-                        {{ form.question_type }}
-                    </div>
-                    <div>
-                        {{ form.difficulty_level.label_tag }}
-                        {{ form.difficulty_level }}
-                    </div>
-                    <div>
-                        {{ form.correct_answer.label_tag }}
-                        {{ form.correct_answer }}
-                    </div>
-
-                    <div>
-                        {{ form.options.management_form }}
-                        {% for option_form in form.options %}
-                            <div>
-                                {{ option_form.id }}
-                                {{ option_form.option_text.label_tag }}
-                                {{ option_form.option_text }}
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <button type="button" class="add-option">Add Option</button>
+        {{ quizform.as_p }}
+        <h2>Add Question</h2>
+        <div id="questions_formset">
+            {{ question_formset.management_form }}
+            {% for form in question_formset %}
+                <div class="question-form">
+                    {{ form.as_p }}
+                    <button type="button" class="remove-question">Remove</button>
                 </div>
             {% endfor %}
         </div>
-
         <button type="button" id="add-question">Add Question</button>
-        <button type="submit">Submit</button>
+        <button type="submit">Save</button>
     </form>
 </div>
+<script>
 
-<script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", function () {
-        var addButton = document.getElementById("add-question");
-        var formContainer = document.getElementById("questions");
-        var formIndex = formContainer.children.length;
 
-        addButton.addEventListener("click", function () {
-            var newForm = formContainer.children[0].cloneNode(true);
-            formIndex++;
-            var formRegex = RegExp(`form-(\\d){1}-`, 'g');
-            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formIndex}-`);
-            var inputs = newForm.querySelectorAll('input, textarea, select');
-            inputs.forEach(input => input.value = '');
-            formContainer.appendChild(newForm);
-            document.getElementById("id_form-TOTAL_FORMS").value = formIndex + 1;
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    let questionForms = document.querySelectorAll(".question-form");
+    let container = document.querySelector("#questions_formset");
+    let addButton = document.querySelector("#add-question");
+    let totalForms = document.querySelector("#id_questions-TOTAL_FORMS");
 
-        formContainer.addEventListener("click", function (event) {
-            if (event.target.classList.contains("add-option")) {
-                var optionFormSet = event.target.closest("div").querySelector("div");
-                var totalForms = optionFormSet.querySelectorAll("div").length;
-                var prefix = optionFormSet.querySelector('input').name.split('-')[0];
-                var newOptionForm = document.createElement('div');
-                newOptionForm.innerHTML = `
-                    <div>
-                        <input type="hidden" name="${prefix}-options-${totalForms}-id" />
-                        <label for="id_${prefix}-options-${totalForms}-option_text">Option:</label>
-                        <input type="text" name="${prefix}-options-${totalForms}-option_text" />
-                    </div>
-                `;
-                optionFormSet.appendChild(newOptionForm);
-                document.getElementById(`${prefix}-options-TOTAL_FORMS`).value = totalForms + 1;
+    if (!totalForms) {
+        console.error("Element with id 'id_questions-TOTAL_FORMS' not found.");
+        return;
+    }
+
+    let formNum = questionForms.length - 1;
+    addButton.addEventListener('click', addForm);
+
+    function addForm(e) {
+        e.preventDefault();
+
+        let newForm = questionForms[0].cloneNode(true);
+        let formRegex = /questions-(\d+)-/g;
+
+        formNum++;
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `questions-${formNum}-`);
+
+        // Update the ID and name attributes of the new form fields
+        let formFields = newForm.querySelectorAll('input, select, textarea, label');
+        formFields.forEach(function(field) {
+            if (field.id) {
+                console.log(`Updating field id from ${field.id} to ${field.id.replace(formRegex, `questions-${formNum}-`)}`);
+                field.id = field.id.replace(formRegex, `questions-${formNum}-`);
+            }
+            if (field.name) {
+                console.log(`Updating field name from ${field.name} to ${field.name.replace(formRegex, `questions-${formNum}-`)}`);
+                field.name = field.name.replace(formRegex, `questions-${formNum}-`);
+            }
+            if (field.htmlFor) { // Update label 'for' attributes
+                console.log(`Updating label for from ${field.htmlFor} to ${field.htmlFor.replace(formRegex, `questions-${formNum}-`)}`);
+                field.htmlFor = field.htmlFor.replace(formRegex, `questions-${formNum}-`);
             }
         });
+
+        // Add remove button event listener
+        newForm.querySelector('.remove-question').addEventListener('click', removeForm);
+
+        container.appendChild(newForm);
+
+        totalForms.setAttribute('value', `${formNum + 1}`);
+    }
+
+    function removeForm(e) {
+        e.preventDefault();
+        let formToRemove = e.target.closest('.question-form');
+        formToRemove.remove();
+
+        // Update total forms count
+        let currentForms = document.querySelectorAll('.question-form').length;
+        totalForms.setAttribute('value', `${currentForms}`);
+    }
+
+    // Add remove event listeners to initial forms
+    questionForms.forEach(function(form) {
+        form.querySelector('.remove-question').addEventListener('click', removeForm);
     });
+});
 </script>
+
 {% endblock %}
