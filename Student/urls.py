@@ -8,7 +8,10 @@ from . views import (home,
                      logout_student,
                      QuizViewSet,
                      QuestionViewSet,
-                     OptionViewSet
+                     OptionViewSet,
+                     AttemptQuiz,
+                     StudentAnswerViewSet,
+                     StudentAttemptViewSet
                      )
 from rest_framework.routers import DefaultRouter
 
@@ -18,6 +21,8 @@ router.register('admin', AdminViewSet, basename='admin')
 router.register('question', QuestionViewSet, basename='question')
 router.register('quiz', QuizViewSet, basename='quiz')
 router.register('options', OptionViewSet, basename='options')
+router.register('attempts', StudentAttemptViewSet, basename='attempts')
+router.register('answers', StudentAnswerViewSet, basename='answers')
 
 urlpatterns = [
     path('', home, name='home'),
@@ -25,5 +30,7 @@ urlpatterns = [
     path('login/', LoginStudent.as_view(), name='login_student'),
     path('profile/', Profile, name='profile'),
     path('logout/', logout_student, name='logout'),
+    path('AttemptQuiz/<int:pk>/', AttemptQuiz.as_view(), name='AttemptQuiz'),
+
     path('api/', include(router.urls))
 ]

@@ -6,8 +6,8 @@ from .models import Student, Admin
 from rest_framework import viewsets
 from django.views import View
 from django.contrib.auth.decorators import login_required
-from Admin.models import Question, Quiz, AnswerOptions
-from Admin.serializers import QuestionSerializer, QuizSerializer, OptionSerializer
+from Admin.models import Question, Quiz, AnswerOptions, StudentAnswer, StudentQuizAttempt
+from Admin.serializers import *
 
 
 def home(request):
@@ -84,6 +84,57 @@ def Profile(request):
     return render(request, 'Student/Profile.html', {'student': student, 'quizes': assigned_quizes})
 
 
+class AttemptQuiz(View):
+    def get(self, request, pk):
+        if request.user.is_authenticated and request.user.is_student:
+            quizobj = Quiz.objects.get(pk=pk)
+            print(quizobj.assigned_to)
+
+            attempt_exists = StudentQuizAttempt.objects.filter(student=request.user, quiz=quizobj).exists()
+            if attempt_exists:
+                return HttpResponse('You have already attempted this Quiz')
+
+            questions = Question.objects.filter(quiz=pk)
+            question_options = {}
+            for question in questions:
+                print("Question id:", question.id)
+                options = AnswerOptions.objects.filter(question=question)
+                option_texts = [option.option_text for option in options]
+                question_options[question.id] = option_texts
+            print(question_options)
+            return render(request, 'Student/AttemptQuiz.html', {
+                'quiz': quizobj,
+                'questions': questions,
+                'question_options': question_options,
+            })
+        else:
+            return redirect('adminhome')
+
+    def post(self, request, pk):
+        if request.user.is_authenticated and request.user.is_student:
+            quizobj = Quiz.objects.get(pk=pk)
+
+            attempt_exists = StudentQuizAttempt.objects.filter(student=request.user, quiz=quizobj).exists()
+            if attempt_exists:
+                return HttpResponse("You have already attempted this Quiz")
+
+            student = Student.objects.get(pk=request.user.id)
+            attempt = StudentQuizAttempt.objects.create(student=student, quiz=quizobj)
+
+            questions = Question.objects.filter(quiz=quizobj)
+            for question in questions:
+                answer = request.POST.get(f'answer_{question.id}')
+                if answer:
+                    StudentAnswer.objects.create(
+                        attempt=attempt,
+                        question=question,
+                        answer=answer
+                    )
+            return redirect('profile')
+        else:
+            return redirect('home')
+
+
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
@@ -107,3 +158,13 @@ class QuizViewSet(viewsets.ModelViewSet):
 class OptionViewSet(viewsets.ModelViewSet):
     queryset = AnswerOptions.objects.all()
     serializer_class = OptionSerializer
+
+
+class StudentAttemptViewSet(viewsets.ModelViewSet):
+    queryset = StudentQuizAttempt.objects.all()
+    serializer_class = StudentQuizAttemptSerializer
+
+
+class StudentAnswerViewSet(viewsets.ModelViewSet):
+    queryset = StudentAnswer.objects.all()
+    serializer_class = StudentAnswerSerializer

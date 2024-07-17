@@ -20,7 +20,7 @@
                 <p>{{ quiz.title }}</p>
             </div>
             <div class="col">
-                <a href="" class="btn btn-success">Attempt Quiz</a>
+                <a href="{% url 'AttemptQuiz' pk=quiz.pk %}" class="btn btn-success">Attempt Quiz</a>
             </div>
         </div>
     {% endfor %}

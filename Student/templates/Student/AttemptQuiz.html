@@ -1,43 +1,45 @@
 {% extends 'Student/base.html' %}
 
 {% block content %}
-
 <div class="container">
     <h2 class="quiz_title"><strong>Quiz Title:</strong> {{ quiz.title }}</h2>
-    <p><strong>Assigned To:</strong> {{ quiz.assigned_to }}</p>
     <p><strong>Difficulty Level:</strong> {{ quiz.get_difficulty_level_display }}</p>
     <p><strong>Total Score:</strong> {{ quiz.Total_score }}</p>
     <p><strong>Time Allowed:</strong> {{ quiz.Time_allowed }} minutes</p>
 
     <hr>
 
-    <h3>Questions:</h3>
-    <ul class="question-list">
-        {% for question in questions %}
-        <li class="question-item">
-            <div class="question-statement">{{ question.question_statement }}</div>
-            <div class="question-details">
-                <p><strong>Type:</strong> {{ question.get_question_type_display }}</p>
-                <p><strong>Difficulty Level:</strong> {{ question.get_difficulty_level_display }}</p>
-                <p><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
-                <p><strong>Answer Options:</strong></p>
-                <ul class="answer-options">
-                    {% for key, value in question_options.items %}
-                        {% if key == question.id %}
-                            {% for option_text in value %}
-                                <li>{{ option_text }}</li>
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            </div>
-        </li>
-        {% endfor %}
-    </ul>
+    <form method="post">
+        {% csrf_token %}
+        <h3>Questions:</h3>
+        <ul class="question-list">
+            {% for question in questions %}
+            <li class="question-item">
+                <div class="question-statement"><strong>Statement: </strong>{{ question.question_statement }}</div>
+                <div class="question-details">
+                    <p><strong>Type:</strong> {{ question.get_question_type_display }}</p>
+                    <div><strong>Answer Options:</strong></div>
+                    <ul class="answer-options">
+                        {% for key, value in question_options.items %}
+                            {% if key == question.id %}
+                                {% for option_text in value %}
 
-    <div class="quiz-footer">
-        <a href="{% url 'quizes' %}" class="btn btn-primary">Back to Home</a>
-    </div>
+                                    <input type="radio" name="answer_{{ question.id }}" value="{{ option_text }}">
+                                    {{ option_text }}
+                                    <br>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <div class="quiz-footer">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
 </div>
 
 <style>
@@ -108,5 +110,4 @@
         background-color: #0056b3;
     }
 </style>
-
 {% endblock %}

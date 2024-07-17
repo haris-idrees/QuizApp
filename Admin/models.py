@@ -14,6 +14,7 @@ class Quiz(models.Model):
     assigned_to = models.ManyToManyField(Student)
     difficulty_level = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default="")
     Total_score = models.IntegerField(default=10, blank=True)
+    Time_allowed = models.IntegerField(help_text="Enter duration in minutes")
 
     def __str__(self):
         return self.title
@@ -46,3 +47,24 @@ class AnswerOptions(models.Model):
 
     def __str__(self):
         return self.option_text
+
+
+class StudentQuizAttempt(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    attempt_date = models.DateTimeField(auto_now_add=True)
+
+    # class Meta:
+    #     unique_together = ('student', 'quiz')
+
+    def __str__(self):
+        return f'{self.student} - {self.quiz}'
+
+
+class StudentAnswer(models.Model):
+    attempt = models.ForeignKey(StudentQuizAttempt, related_name='answers', on_delete=models.CASCADE)
+    question = models.ForeignKey('Question', on_delete=models.CASCADE)
+    answer = models.TextField()
+
+    def __str__(self):
+        return f'{self.attempt.student} - {self.question} - {self.answer}'
