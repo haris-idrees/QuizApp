@@ -1,83 +1,36 @@
 {% extends 'Student/base.html' %}
 {% load static %}
+
+{% block title %}
+Welcome|
+{% endblock %}
+
 {% block content %}
-<style>
-    .homepage-container {
-        position: absolute;
-        top: 10%;
-        left: 20%;
-        width: 60%;
-        height: 80vh;
-        display: flex;
-        background-color: #f1f1f1;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        margin-top: 3%;
-    }
 
-    .left-container
-    {
-        width: 60%;
-        padding: 20px;
-    }
-    .right-container {
-        padding: 40%;
-        padding: 20px;
-    } 
-
-    .left-container {
-        display: flex;
-        flex-direction: column;
-       
-    }
-
-    .right-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    h1 {
-        color: #333;
-        font-size: 2.5rem;
-        margin-top: 30px;
-        margin-bottom: 30px;
-    }
-
-    .links {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .btn {
-        width: 150px;
-        text-align: center;
-        border-radius: 10px;
-        margin-bottom: 10px;
-    }
-
-    .right-container img {
-        max-width: 100%;
-        height: 100%;
-        display: block;
-        border-radius: 10px;
-    }
-</style>
-
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
 
 <div class="homepage-container">
     <div class="left-container">
         <h1>Welcome</h1>
         <div class="links">
-            <a href="{% url 'login_student' %}" class="btn btn-primary">Login</a>
-            <a href="{% url 'register_student' %}" class="btn btn-primary">Register</a>
+            {% if request.user.is_authenticated and request.user.is_student %}
+                <h2>{{ request.user.username }}</h2>
+                <a href="{% url 'profile' pk=request.user.id %}" class="btn btn-primary">View Your profile</a>
+            {% else %}
+                 <a href="{% url 'login_student' %}" class="btn btn-primary">Login</a>
+                <a href="{% url 'register_student' %}" class="btn btn-primary">Register</a>
+            {% endif %}
+            {% if request.user.is_admin %}
+                <p class="admin-message">Hey admin, you can move to your panel by clicking the following</p>
+                <a href="/adminlogin/" class="btn btn-primary admin-panel-btn">Admin Panel</a>
+            {% else %}
+                <a href="/adminlogin/" class="btn btn-primary admin-panel-btn">Admin Panel</a>
+            {% endif %}
         </div>
     </div>
     <div class="right-container">
         <img src="{% static 'Student/home.jpg' %}" alt="Home Image">
     </div>
 </div>
-
 
 {% endblock %}

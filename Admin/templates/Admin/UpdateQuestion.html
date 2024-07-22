@@ -1,0 +1,35 @@
+{% extends 'Student/base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/UpdateQuestion.css' %}">
+
+<div class="container">
+    <h1 class="title">Update Question</h1>
+    <form id="question-form" method="post">
+        {% csrf_token %}
+        {{ question_form.as_p }}
+
+        <div id="options_formset">
+            {{ formset.management_form }}
+            {% for form in formset %}
+                <div class="option-form">
+                    {{ form.as_p }}
+                    <button type="button" class="remove-option btn btn-danger">Remove</button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" id="add-option" class="btn btn-secondary">Add Option</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+
+<script src="{% static 'Admin/js/UpdateQuestion.js' %}">
+
+</script>
+
+{% endblock %}

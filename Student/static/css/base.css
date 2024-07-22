@@ -1,0 +1,51 @@
+.navbar-custom {
+  background-color: #f1eded;
+
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .navbar-nav .nav-link {
+  color: rgb(179, 51, 51);
+  font-weight: bolder;
+  font-size: larger;
+}
+
+.navbar-custom .navbar-nav .nav-link:hover {
+  background-color: #ddcdcd;
+  color: #e98989;
+  border-radius: 10px;
+
+}
+
+.navbar-custom .navbar-nav .active>.nav-link {
+  background-color: #f1eded;
+  color: white;
+}
+
+button {
+  color: #e98989;
+  border-radius: 10px;
+  border: none;
+}
+
+.btn {
+  width: 150px;
+  text-align: center;
+  border-radius: 10px;
+  margin-right: 10%;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+h1 {
+  color: black;
+  padding-top: 40px;
+  padding-left: 20%;
+  padding-right: 37%;
+  font-family: sans-serif;
+  font-weight: bold
+}
+
+.links {
+  margin-top: 50px;
+}

@@ -1,0 +1,15 @@
+{% extends 'Student/base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/EmailConfirmation.css' %}">
+
+<div class="container mt-5 text-center">
+    <p>Your password has been successfully updated. You may proceed to Login again.</p>
+    <a type="submit" class="btn-primary" href="{% url 'login_student' %}">Login</a>
+</div>
+
+
+{% endblock %}

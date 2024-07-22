@@ -1,16 +1,32 @@
 {% extends 'Student/base.html' %}
 
+{% load static %}
+
 {% block content %}
 
+<link rel="stylesheet" href="{% static 'css/Home.css' %}">
+
+
 <div class="container">
-    <div>
-        <h1>Students</h1>
-        <a class="btn btn-primary" href="{% url 'students' %}">View</a>
-    </div>
-    <div>
-        <h1>Quizes</h1>
-        <a class="btn btn-primary" href="{% url 'quizes' %}">View</a>
+    <div class="row">
+        <div class="col-md-6 section-card">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h1 class="card-title">Students</h1>
+                    <a class="btn btn-primary btn-lg" href="{% url 'students' %}">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 section-card">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h1 class="card-title">Quizzes</h1>
+                    <a class="btn btn-primary btn-lg" href="{% url 'quizes' %}">View</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-{% endblock%}
+
+{% endblock %}

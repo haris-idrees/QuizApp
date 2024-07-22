@@ -1,159 +1,34 @@
 {% extends 'Student/base.html' %}
 
+{% load static %}
+
 {% block content %}
 
+<link rel="stylesheet" href="{% static 'css/CreateQuiz.css' %}">
+
 <div class="container">
-    <h1>Create Quiz</h1>
+    <h2><strong>Create Quiz 2</strong></h2>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
     <form id="quiz-form" method="post">
         {% csrf_token %}
         {{ quizform.as_p }}
-        <h2>Add Question</h2>
-        <div id="questions_formset">
-            {{ question_formset.management_form }}
-            {% for form in question_formset %}
-                <div class="question-form">
-                    {{ form.as_p }}
 
+        <div id="questions">
+            <h3>Available Questions</h3>
+            {% for question in questions %}
+                <div class="question-item">
+                    <input type="checkbox" name="question_ids" value="{{ question.question_statement }}" id="question_{{ question.id }}">
+                    <label for="question_{{ question.id }}">{{ question.question_statement }}</label>
                 </div>
             {% endfor %}
         </div>
-        <button type="button" id="add-question">Add Question</button>
-        <button type="submit">Save</button>
+
+        <a class="button" id="add-question" href="{% url 'createQuestion' pk=1  %}">Add New Question</a>
     </form>
 </div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let questionForms = document.querySelectorAll(".question-form");
-    let container = document.querySelector("#questions_formset");
-    let addButton = document.querySelector("#add-question");
-    let totalForms = document.querySelector("#id_questions-TOTAL_FORMS");
 
-    if (!totalForms) {
-        console.error("Element with id 'id_questions-TOTAL_FORMS' not found.");
-        return;
-    }
 
-    let formNum = questionForms.length - 1;
-    addButton.addEventListener('click', addForm);
-
-    function addForm(e) {
-        e.preventDefault();
-
-        let newForm = questionForms[0].cloneNode(true);
-        let formRegex = /questions-(\d+)-/g;
-
-        formNum++;
-        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `questions-${formNum}-`);
-
-        // Update the ID and name attributes of the new form fields
-        let formFields = newForm.querySelectorAll('input, select, textarea, label');
-        formFields.forEach(function(field) {
-            if (field.id) {
-                field.id = field.id.replace(formRegex, `questions-${formNum}-`);
-            }
-            if (field.name) {
-                field.name = field.name.replace(formRegex, `questions-${formNum}-`);
-            }
-            if (field.htmlFor) { // Update label 'for' attributes
-                field.htmlFor = field.htmlFor.replace(formRegex, `questions-${formNum}-`);
-            }
-        });
-
-        // Reset the option formset within the new question form
-        let optionsFormset = newForm.querySelector('.options-formset');
-        let firstOptionForm = optionsFormset.querySelector('.option-form:first-child');
-        let option_formNum = 0;
-
-        optionsFormset.innerHTML = optionsFormset.innerHTML.replace(/options-\d+-/g, `options-${option_formNum}-`);
-
-        optionsFormset.querySelectorAll('input, select, textarea, label').forEach(function(field) {
-            if (field.id) {
-                field.id = field.id.replace(/options-\d+-/g, `options-${option_formNum}-`);
-            }
-            if (field.name) {
-                field.name = field.name.replace(/options-\d+-/g, `options-${option_formNum}-`);
-            }
-            if (field.htmlFor) { // Update label 'for' attributes
-                field.htmlFor = field.htmlFor.replace(/options-\d+-/g, `options-${option_formNum}-`);
-            }
-        });
-
-        // Add remove button event listener for the new option
-        firstOptionForm.querySelector('.remove-option').addEventListener('click', removeOptionForm);
-
-        // Add event listeners for add option button
-        newForm.querySelector('.add-option').addEventListener('click', function(e) {
-            e.preventDefault();
-            addOptionForm(optionsFormset);
-        });
-
-        // Add event listener for the remove question button
-        newForm.querySelector('.remove-question').addEventListener('click', removeForm);
-
-        container.appendChild(newForm);
-
-        totalForms.setAttribute('value', `${formNum + 1}`);
-    }
-
-    function addOptionForm(optionsFormset) {
-        let formRegex = /options-(\d+)-/g;
-        let option_formNum = optionsFormset.querySelectorAll('.option-form').length;
-
-        let newOptionForm = optionsFormset.querySelector('.option-form:first-child').cloneNode(true);
-
-        newOptionForm.innerHTML = newOptionForm.innerHTML.replace(formRegex, `options-${option_formNum}-`);
-
-        // Update the ID and name attributes of the new form fields
-        let formFields = newOptionForm.querySelectorAll('input, select, textarea, label');
-        formFields.forEach(function(field) {
-            if (field.id) {
-                field.id = field.id.replace(formRegex, `options-${option_formNum}-`);
-            }
-            if (field.name) {
-                field.name = field.name.replace(formRegex, `options-${option_formNum}-`);
-            }
-            if (field.htmlFor) { // Update label 'for' attributes
-                field.htmlFor = field.htmlFor.replace(formRegex, `options-${option_formNum}-`);
-            }
-        });
-
-        // Add event listener for the remove button
-        newOptionForm.querySelector('.remove-option').addEventListener('click', removeOptionForm);
-
-        optionsFormset.appendChild(newOptionForm);
-    }
-
-    function removeForm(e) {
-        e.preventDefault();
-        let formToRemove = e.target.closest('.question-form');
-        formToRemove.remove();
-
-        // Update total forms count
-        let currentForms = document.querySelectorAll('.question-form').length;
-        totalForms.setAttribute('value', `${currentForms}`);
-    }
-
-    function removeOptionForm(e) {
-        e.preventDefault();
-        let optionFormToRemove = e.target.closest('.option-form');
-        optionFormToRemove.remove();
-    }
-
-    // Add remove event listeners to initial forms
-    questionForms.forEach(function(form) {
-        form.querySelector('.remove-question').addEventListener('click', removeForm);
-
-        // Add event listeners for option forms within each question form
-        form.querySelectorAll('.remove-option').forEach(function(button) {
-            button.addEventListener('click', removeOptionForm);
-        });
-
-        form.querySelector('.add-option').addEventListener('click', function(e) {
-            e.preventDefault();
-            addOptionForm(form.querySelector('.options-formset'));
-        });
-    });
-});
-</script>
 
 {% endblock %}
