@@ -1,30 +1,115 @@
 {% extends 'Student/base.html' %}
 
 {% block content %}
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>{{ student.username }}'s Profile</h1>
+        </div>
 
-<style>
-    .row{
-        display: flex;
-        flex-direction:row;
+        <div class="profile-info">
+            <h2>Personal Information</h2>
+            <p><strong>Student Name:</strong> {{ student.username }}</p>
+            <p><strong>Email:</strong> {{ student.email }}</p>
+            <p><strong>Phone Number:</strong> {{ student.phone_number }}</p>
+            <p><strong>Enrollment Id:</strong> {{ student.enrollment_number }}</p>
+        </div>
+
+        <div class="row mt-4 temp">
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        Assigned Quizzes
+                    </div>
+                    <div class="card-body">
+                        {% if unattempted_quizes %}
+                            {% for quiz in unattempted_quizes %}
+                                <div class="quiz-item row">
+                                    <div class="col-8">
+                                        <p class="quiz-title">{{ quiz.title }}</p>
+                                    </div>
+                                    <div class="col-4 text-right">
+                                        <a href="{% url 'AttemptQuiz' pk=quiz.pk %}" class="btn btn-success btn-sm">Attempt Quiz</a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No quizzes assigned.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        Attempted Quizzes
+                    </div>
+                    <div class="card-body">
+                        {% if attempts %}
+                            {% for attempt in attempts %}
+                                <div class="quiz-item">
+                                    <p class="quiz-title">{{ attempt.quiz.title }}</p>
+                                    <p class="text-muted">Score: {{ attempt.attempt_score }} / {{ attempt.quiz.Total_score }}</p>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No quizzes attempted yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+
+    .profile-container {
+        width: 80%;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin-top: 50px;
+    }
+
+    .profile-header {
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+
+    .profile-info,
+    {
+        margin-bottom: 20px;
+    }
+
+    .profile-info h2,
+    .profile-quizzes h2,
+    .profile-attempts h2 {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .temp {
+        justify-content: center;
+    }
+
+    .list-title {
+        padding: 10px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+    }
+
+    li:nth-child(odd) {
+        background-color: #f1f1f1;
     }
 
 </style>
-<H1> DashBoard </H1>
-
-<div class="container">
-    <h3>Welcome {{ student.username }}</h3>
-    <h4>Assigned Quizes</h4>
-    {% for quiz in quizes %}
-        <div class="row>">
-            <div class="col">
-                <p>{{ quiz.title }}</p>
-            </div>
-            <div class="col">
-                <a href="{% url 'AttemptQuiz' pk=quiz.pk %}" class="btn btn-success">Attempt Quiz</a>
-            </div>
-        </div>
-    {% endfor %}
-</div>
-
-
 {% endblock %}

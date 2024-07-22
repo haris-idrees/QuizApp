@@ -11,6 +11,6 @@ class Student(User):
     phone_number = models.CharField(max_length=11, blank=True, default= "")
     enrollment_number = models.CharField(max_length=10, default= "")
 
-
-class Admin(User):
-    pass
+    class Meta:
+        verbose_name = 'Student'
+        verbose_name_plural = 'Students'

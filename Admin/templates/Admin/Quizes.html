@@ -1,102 +1,128 @@
 {% extends 'Student/base.html' %}
 
 {% block content %}
-
-<style>
-
-body {
-    background-color: #f8f9fa;
-    font-family: 'Arial', sans-serif;
-}
-
-h1 {
-    color: #343a40;
-    font-size: 2.5rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.list-group-item {
-    background-color: #e7e2e2;
-    border: 1px solid #e9ecef;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.quiz-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #212529;
-    font-family:Georgia, 'Times New Roman', Times, serif;
-}
-
-.btn-success {
-    background-color: #f1aca3;
-    border: none;
-    padding: 10px 10px;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 5px;
-    color:rgb(99, 5, 5);
-}
-
-.btn-success:hover {
-    background-color: #eba096;
-    color: rgb(99, 5, 5);
-}
-
-.btn-primary {
-    background-color: #007bff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 5px;
-    display: block;
-    width: 25%;
-    text-align: center;
-    margin-top: 20px;
-}
-
-.btn-primary:hover {
-    background-color: #0069d9;
-}
-
-.container {
-    max-width: 800px; /* Set a maximum width for the container */
-    padding: 30px; /* Padding inside container */
-    background-color: #ffffff; /* White background for the container */
-    border: 1px solid #e9ecef; /* Light border */
-    border-radius: 5px; /* Rounded corners */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    margin-top: 50px; /* Space at the top */
-}
-
-</style>
-
 <div class="container mt-5">
     <h1 class="mb-4">Quizzes</h1>
     <div class="list-group">
-        {% for quiz in quizes %}
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <span class="quiz-title">{{ quiz.title }}</span>
-                <a class="btn btn-success btn-sm" href="{% url 'quiz_detail' pk=quiz.pk %}">View</a>
-                <form action="{% url 'quiz_delete' pk=quiz.pk %}" method="post" >
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success btn-sm">Delete</button>
-                </form>
-            </div>
-        {% endfor %}
+        {% if quizes %}
+            {% for quiz in quizes %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="quiz-title">{{ quiz.title }}</span>
+                    <div class="button-group">
+                        <a class="btn btn-success btn-sm" href="{% url 'quiz_detail' pk=quiz.pk %}">View</a>
+                        <a class="btn btn-success btn-sm" href="{% url 'quizattempts' pk=quiz.id %}">Result</a>
+                        <form action="{% url 'quiz_delete' pk=quiz.pk %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center">No Quizzes to display</p>
+        {% endif %}
     </div>
-    <div class="mt-4">
-        <a class="btn btn-primary" href="{% url 'createQuiz' %}">Create New Quiz</a>
+    <div class="mt-4 d-flex justify-content-center">
+        <a class="btn btn-primary add" href="{% url 'createQuiz' %}">Create New Quiz</a>
+        <a class="btn btn-primary add" href="{% url 'createQuiz2' %}">Create New Quiz 2</a>
     </div>
 </div>
 
+<style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Arial', sans-serif;
+    }
+
+    h1 {
+        color: #343a40;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .container {
+        max-width: 800px; /* Set a maximum width for the container */
+        padding: 30px; /* Padding inside container */
+        background-color: #ffffff; /* White background for the container */
+        border: 1px solid #e9ecef; /* Light border */
+        border-radius: 5px; /* Rounded corners */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        margin-top: 50px; /* Space at the top */
+    }
+
+    .list-group-item {
+        background-color: #e7e2e2;
+        border: 1px solid #e9ecef;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .quiz-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #212529;
+        font-family: Georgia, 'Times New Roman', Times, serif;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 5px;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 5px;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        color: white;
+    }
+
+    .add{
+        background-color: #2b96ff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 5px;
+        display: block;
+        width: 30%;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .btn-primary:hover, .btn-secondary:hover {
+        background-color: #0069d9;
+        color: white;
+    }
+
+</style>
 {% endblock %}

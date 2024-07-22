@@ -1,0 +1,84 @@
+{% extends 'Student/base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <h2><strong>Update Quiz</strong></h2>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form id="quiz-form" method="post">
+        {% csrf_token %}
+        {{ quizform.as_p }}
+
+        <div id="questions">
+            {% for question in questions %}
+                <div class="question-item">
+                    <input type="checkbox" checked name="question_ids" value="{{ question.id }}" id="question_{{ question.id }}">
+                    <label for="question_{{ question.id }}">{{ question.question_statement }}</label>
+                </div>
+            {% endfor %}
+        </div>
+
+        <a class="button" id="add-question" href="{% url 'createQuestion' pk=quizid  %}">Add Question</a>
+        <input class='btn-update' type="submit" value="Update">
+    </form>
+</div>
+
+<style>
+    .container {
+        margin-top: 20px;
+        max-width: 800px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    h1 {
+        margin-bottom: 20px;
+    }
+
+    .question-item {
+        margin-bottom: 10px;
+    }
+
+    .button {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+        background-color: #0056b3;
+        color: aliceblue;
+        text-decoration: none;
+    }
+
+    .btn-update {
+        margin-top: 10px;
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: #ffffff;
+        text-decoration: none;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-update:hover {
+        background-color: #218838;
+        color: aliceblue;
+        text-decoration: none;
+    }
+</style>
+
+{% endblock %}

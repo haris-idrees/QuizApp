@@ -1,6 +1,36 @@
 {% extends 'Student/base.html' %}
 {% load static %}
+
+{% block title %}
+Welcome|
+{% endblock %}
+
 {% block content %}
+
+<div class="homepage-container">
+    <div class="left-container">
+        <h1>Welcome</h1>
+        <div class="links">
+            {% if request.user.is_authenticated and request.user.is_student %}
+                <h2>{{ request.user.username }}</h2>
+                <a href="{% url 'profile' pk=request.user.id %}" class="btn btn-primary">View Your profile</a>
+            {% else %}
+                 <a href="{% url 'login_student' %}" class="btn btn-primary">Login</a>
+                <a href="{% url 'register_student' %}" class="btn btn-primary">Register</a>
+            {% endif %}
+            {% if request.user.is_admin %}
+                <p class="admin-message">Hey admin, you can move to your panel by clicking the following</p>
+                <a href="/adminlogin/" class="btn btn-primary admin-panel-btn">Admin Panel</a>
+            {% else %}
+                <a href="/adminlogin/" class="btn btn-primary admin-panel-btn">Admin Panel</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="right-container">
+        <img src="{% static 'Student/home.jpg' %}" alt="Home Image">
+    </div>
+</div>
+
 <style>
     .homepage-container {
         position: absolute;
@@ -15,20 +45,19 @@
         margin-top: 3%;
     }
 
-    .left-container
-    {
+    .left-container {
         width: 60%;
         padding: 20px;
     }
+
     .right-container {
         padding: 40%;
         padding: 20px;
-    } 
+    }
 
     .left-container {
         display: flex;
         flex-direction: column;
-       
     }
 
     .right-container {
@@ -63,21 +92,23 @@
         display: block;
         border-radius: 10px;
     }
+
+    .admin-message {
+        font-size: 1rem;
+        color: #666;
+        margin-top: 40px;
+    }
+
+    .admin-panel-btn {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: #fff;
+    }
+
+    .admin-panel-btn:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
 </style>
-
-
-<div class="homepage-container">
-    <div class="left-container">
-        <h1>Welcome</h1>
-        <div class="links">
-            <a href="{% url 'login_student' %}" class="btn btn-primary">Login</a>
-            <a href="{% url 'register_student' %}" class="btn btn-primary">Register</a>
-        </div>
-    </div>
-    <div class="right-container">
-        <img src="{% static 'Student/home.jpg' %}" alt="Home Image">
-    </div>
-</div>
-
 
 {% endblock %}

@@ -1,13 +1,21 @@
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .serializers import StudentSerializer, AdminSerializer
-from django.contrib.auth import authenticate, login, logout
-from .models import Student, Admin
+from .serializers import StudentSerializer
+from django.contrib.auth import login, logout
+from .models import Student
+from Admin.models import Admin
+from Quiz.models import *
 from rest_framework import viewsets
 from django.views import View
-from django.contrib.auth.decorators import login_required
-from Admin.models import Question, Quiz, AnswerOptions, StudentAnswer, StudentQuizAttempt
 from Admin.serializers import *
+from django.core.mail import send_mail, EmailMessage
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
+from django.db import transaction
 
 
 def home(request):
@@ -18,6 +26,7 @@ class RegisterStudent(View):
     def get(self, request):
         return render(request, 'Student/RegisterStudent.html')
 
+    @transaction.atomic
     def post(self, request):
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -43,7 +52,8 @@ class RegisterStudent(View):
             email=email,
             password=password,
             phone_number=phone,
-            enrollment_number=enrollment_id
+            enrollment_number=enrollment_id,
+            is_student=True
         )
 
         return render(request, 'Student/LoginStudent.html')
@@ -51,8 +61,13 @@ class RegisterStudent(View):
 
 class LoginStudent(View):
     def get(self, request):
-        return render(request, 'Student/LoginStudent.html')
+        if not request.user.is_authenticated:
+            return render(request, 'Student/LoginStudent.html')
+        else:
+            return redirect('home')
 
+
+    @transaction.atomic
     def post(self, request):
 
         username = request.POST.get('username')
@@ -65,10 +80,91 @@ class LoginStudent(View):
                 login(request, std)
                 request.session['username'] = username
                 request.session.save()
-                return redirect(Profile)
+                return redirect('profile' , pk=std.pk)
 
         error = 'Invalid credentials'
         return render(request, 'Student/LoginStudent.html', {'error': error})
+
+
+class ForgotPassword(View):
+    def get(self, request):
+        return render(request, 'Student/forgotpassword.html')
+
+    def post(self, request):
+        email = request.POST.get('email')
+        student = Student.objects.get(email=email)
+        if student:
+            context = {
+                'protocol': 'http',
+                'domain': '127.0.0.1:8000',
+                'uid': urlsafe_base64_encode(force_bytes(student.pk)),
+                'token': default_token_generator.make_token(student)
+            }
+            html_content = render_to_string('Student/password_reset_email.html', context)
+            text_content = strip_tags(html_content)
+
+            email = EmailMessage(
+                subject='Reset Password',
+                body=text_content,
+                from_email=settings.EMAIL_HOST_USER,
+                to=[email],
+            )
+            email.content_subtype = 'html'
+
+            email.send()
+
+            return render(request, 'Student/EmailConfirmation.html')
+        else:
+            error = 'You are not a registered User'
+            return render(request, 'Student/RegisterStudent.html', {'error': error})
+
+        # subject = 'Password Reset'
+        # message = 'Your password has been reset'
+        # if subject and message:
+        #     try:
+        #         send_mail(
+        #             subject,
+        #             message,
+        #             settings.EMAIL_HOST_USER,
+        #             ["harisidrees135@gmail.com"],
+        #             fail_silently=False
+        #         )
+        #     except BadHeaderError:
+        #         return HttpResponse("Invalid header found.")
+        #     except Exception as e:
+        #         print(f"Failed to send email: {e}")
+        #         return HttpResponse("Failed to send email.")
+        #
+        #     return HttpResponse("Email sent")
+        # else:
+        #     return HttpResponse("Make sure all fields are entered and valid.")
+
+
+class EmailConfirmation(View):
+    def get(self, request):
+        return render(request, 'Student/EmailConfirmation.html')
+
+    def post(self, request):
+        pass
+
+
+class SetPassword(View):
+    def get(self, request, uidb64, token):
+        return render(request, 'Student/setpassword.html')
+
+    def post(self, request, uidb64, token):
+        password = request.POST.get('password')
+        print(password)
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        student = Student.objects.get(pk=uid)
+        student.set_password(password)
+        student.save()
+        return render(request, 'Student/ResetSuccess.html')
+
+
+class ResetSuccess(View):
+    def get(self, request):
+        return render(request, 'Student/ResetSuccess.html')
 
 
 def logout_student(request):
@@ -76,12 +172,30 @@ def logout_student(request):
     return redirect('login_student')
 
 
-@login_required()
-def Profile(request):
-    username = request.session.get('username')
-    student = Student.objects.get(username=username)
-    assigned_quizes = Quiz.objects.all().filter(assigned_to=student)
-    return render(request, 'Student/Profile.html', {'student': student, 'quizes': assigned_quizes})
+class Profile(View):
+    def get(self, request, pk):
+        if request.user.is_authenticated and request.user.is_student:
+            student = Student.objects.get(pk=pk)
+
+            assigned_quizes = Quiz.objects.all().filter(assigned_to=student)
+
+            attempts = StudentQuizAttempt.objects.filter(student=student)
+            attempted_quizes = []
+            for attempt in attempts:
+                attempted_quizes.append(attempt.quiz)
+
+            unattempted_quizes = []
+            for quiz in assigned_quizes:
+                if quiz not in attempted_quizes:
+                    unattempted_quizes.append(quiz)
+
+            return render(request, 'Student/Profile.html',{
+                           'student': student,
+                           'attempts': attempts,
+                           'unattempted_quizes': unattempted_quizes
+            })
+    def post(self, request, pk):
+        pass
 
 
 class AttemptQuiz(View):
@@ -108,8 +222,9 @@ class AttemptQuiz(View):
                 'question_options': question_options,
             })
         else:
-            return redirect('adminhome')
+            return redirect('profile', pk=request.user.id)
 
+    @transaction.atomic
     def post(self, request, pk):
         if request.user.is_authenticated and request.user.is_student:
             quizobj = Quiz.objects.get(pk=pk)
@@ -119,18 +234,31 @@ class AttemptQuiz(View):
                 return HttpResponse("You have already attempted this Quiz")
 
             student = Student.objects.get(pk=request.user.id)
-            attempt = StudentQuizAttempt.objects.create(student=student, quiz=quizobj)
+            attempt = StudentQuizAttempt.objects.create(student=student, quiz=quizobj, attempt_score=0)
 
             questions = Question.objects.filter(quiz=quizobj)
+            attempt_score = 0
             for question in questions:
                 answer = request.POST.get(f'answer_{question.id}')
                 if answer:
-                    StudentAnswer.objects.create(
-                        attempt=attempt,
-                        question=question,
-                        answer=answer
-                    )
-            return redirect('profile')
+                    if answer == question.correct_answer:
+                        attempt_score += 1
+                        StudentAnswer.objects.create(
+                            attempt=attempt,
+                            question=question,
+                            answer=answer,
+                            score=1
+                        )
+                    else:
+                        StudentAnswer.objects.create(
+                            attempt=attempt,
+                            question=question,
+                            answer=answer,
+                            score=0
+                        )
+            attempt.attempt_score = attempt_score
+            attempt.save()
+            return redirect('profile', pk=request.user.id)
         else:
             return redirect('home')
 
@@ -138,33 +266,3 @@ class AttemptQuiz(View):
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-
-
-class AdminViewSet(viewsets.ModelViewSet):
-    queryset = Admin.objects.all()
-    serializer_class = AdminSerializer
-
-
-class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-
-
-class QuizViewSet(viewsets.ModelViewSet):
-    queryset = Quiz.objects.all()
-    serializer_class = QuizSerializer
-
-
-class OptionViewSet(viewsets.ModelViewSet):
-    queryset = AnswerOptions.objects.all()
-    serializer_class = OptionSerializer
-
-
-class StudentAttemptViewSet(viewsets.ModelViewSet):
-    queryset = StudentQuizAttempt.objects.all()
-    serializer_class = StudentQuizAttemptSerializer
-
-
-class StudentAnswerViewSet(viewsets.ModelViewSet):
-    queryset = StudentAnswer.objects.all()
-    serializer_class = StudentAnswerSerializer

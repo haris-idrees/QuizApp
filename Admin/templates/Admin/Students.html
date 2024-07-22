@@ -2,32 +2,52 @@
 
 {% block content %}
 
-<h1>Welcome Admin</h1>
+<h1 class="text-center">Welcome Admin</h1>
 <div class="container">
-  <table class="table table-hover" border="1">
-        <thead>
-            <tr class="bg-info">
-                <th>Username</th>
-                <th>Email</th>
-                <th>Phone Number</th>
-                <th>Enrollment ID</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for student in students %}
-            <tr>
-                <td>{{ student.username }}</td>
-                <td>{{ student.email }}</td>
-                <td>{{ student.phone_number }}</td>
-                <td>{{ student.enrollment_number }}</td>
-                <td>
-                    <a class="btn btn-warning" href="">Update</a>
-                    <a class="btn btn-danger" href="">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="row">
+        {% for student in students %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ student.username }}</h5>
+                    <p class="card-text"><strong>Email:</strong> {{ student.email }}</p>
+                    <p class="card-text"><strong>Phone Number:</strong> {{ student.phone_number }}</p>
+                    <p class="card-text"><strong>Enrollment ID:</strong> {{ student.enrollment_number }}</p>
+                    <a href="{% url 'update_student' pk=student.id %}" class="btn btn-warning">Update</a>
+                    <form action="{% url 'delete_student' pk=student.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" type="submit">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <a class="btn btn-primary" href="http://127.0.0.1:8000/register/">Add New Student</a>
 </div>
+
+    <style>
+.card {
+    border: 1px solid #ddd;
+    border-radius: .25rem;
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.card-title {
+    margin-bottom: .75rem;
+}
+
+.card-text {
+    margin-bottom: .5rem;
+}
+
+.btn {
+    margin-right: .5rem;
+}
+</style>
+
 {% endblock %}

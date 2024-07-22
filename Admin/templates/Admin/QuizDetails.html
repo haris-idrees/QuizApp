@@ -4,7 +4,13 @@
 
 <div class="container">
     <h2 class="quiz_title"><strong>Quiz Title:</strong> {{ quiz.title }}</h2>
-    <p><strong>Assigned To:</strong> {{ quiz.assigned_to }}</p>
+    <p><strong>Assigned To:</strong>
+        <ul>
+            {% for student in assigned_students %}
+                <li>{{ student.username }}</li>
+            {% endfor %}
+        </ul>
+    </p>
     <p><strong>Difficulty Level:</strong> {{ quiz.get_difficulty_level_display }}</p>
     <p><strong>Total Score:</strong> {{ quiz.Total_score }}</p>
     <p><strong>Time Allowed:</strong> {{ quiz.Time_allowed }} minutes</p>
@@ -14,29 +20,45 @@
     <h3>Questions:</h3>
     <ul class="question-list">
         {% for question in questions %}
-        <li class="question-item">
-            <div class="question-statement">{{ question.question_statement }}</div>
-            <div class="question-details">
-                <p><strong>Type:</strong> {{ question.get_question_type_display }}</p>
-                <p><strong>Difficulty Level:</strong> {{ question.get_difficulty_level_display }}</p>
-                <p><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
-                <p><strong>Answer Options:</strong></p>
-                <ul class="answer-options">
-                    {% for key, value in question_options.items %}
-                        {% if key == question.id %}
-                            {% for option_text in value %}
-                                <li>{{ option_text }}</li>
+        <li class="question-item d-flex justify-content-between align-items-center">
+            <div>
+                <div class="question-statement">{{ question.question_statement }}</div>
+                <div class="question-details">
+                    <p><strong>Type:</strong> {{ question.get_question_type_display }}</p>
+                    <p><strong>Difficulty Level:</strong> {{ question.get_difficulty_level_display }}</p>
+                    {% if question.correct_answer %}
+                        <p><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
+                    {% endif %}
+                    {% if question_options %}
+                        <p><strong>Answer Options:</strong></p>
+                        <ul class="answer-options">
+                            {% for key, value in question_options.items %}
+                                {% if key == question.id %}
+                                    {% for option_text in value %}
+                                        <li>{{ option_text }}</li>
+                                    {% endfor %}
+                                {% endif %}
                             {% endfor %}
-                        {% endif %}
-                    {% endfor %}
-                </ul>
+                        </ul>
+                    {% else %}
+                        <p>No Options for this question</p>
+                    {% endif %}
+                </div>
             </div>
+            <a class="btn-update" href="{% url 'updateQuestion' pk=question.id %}">Update Question</a>
         </li>
         {% endfor %}
     </ul>
 
     <div class="quiz-footer">
-        <a href="{% url 'quizes' %}" class="btn btn-primary">Back to Home</a>
+        <div class="row justify-content-center">
+            <div class="col-md-3">
+                <a href="{% url 'quizes' %}" class="btn btn-primary btn-block">Back to Quizzes</a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'updateQuiz' pk=quiz.pk %}" class="btn btn-primary btn-block">Update Quiz</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -66,6 +88,9 @@
         border-radius: 4px;
         background-color: #fff;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .question-statement {
@@ -89,10 +114,11 @@
     .quiz-footer {
         text-align: center;
         margin-top: 20px;
+        align-content: center;
+        align-items: center;
     }
 
     .btn {
-        display: inline-block;
         padding: 10px 20px;
         background-color: #007bff;
         color: #fff;
@@ -106,6 +132,31 @@
 
     .btn:hover {
         background-color: #0056b3;
+    }
+
+    .btn-block {
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .btn-update {
+        margin-top: 10px;
+        margin-right: 20px;
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: #ffffff;
+        text-decoration: none;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-update:hover {
+        background-color: #218838;
+        color: aliceblue;
+        text-decoration: none;
     }
 </style>
 

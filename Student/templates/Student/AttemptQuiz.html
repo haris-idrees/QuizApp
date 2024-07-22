@@ -9,38 +9,85 @@
 
     <hr>
 
-    <form method="post">
+    <h3>Questions:</h3>
+    <form id="quiz-form" method="post" action="{% url 'AttemptQuiz' quiz.id %}">
         {% csrf_token %}
-        <h3>Questions:</h3>
         <ul class="question-list">
             {% for question in questions %}
             <li class="question-item">
                 <div class="question-statement"><strong>Statement: </strong>{{ question.question_statement }}</div>
                 <div class="question-details">
                     <p><strong>Type:</strong> {{ question.get_question_type_display }}</p>
-                    <div><strong>Answer Options:</strong></div>
+                    <p><strong>Answer Options:</strong></p>
                     <ul class="answer-options">
-                        {% for key, value in question_options.items %}
-                            {% if key == question.id %}
-                                {% for option_text in value %}
-
-                                    <input type="radio" name="answer_{{ question.id }}" value="{{ option_text }}">
-                                    {{ option_text }}
-                                    <br>
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
+                        {% if question.question_type == 'MCQ' %}
+                            {% for key, value in question_options.items %}
+                                {% if key == question.id %}
+                                    {% for option_text in value %}
+                                        <li>
+                                            <input type="radio" name="answer_{{ question.id }}" value="{{ option_text }}" required>
+                                            {{ option_text }}
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        {% elif question.question_type == 'TF' %}
+                            <li>
+                                <input type="radio" name="answer_{{ question.id }}" value="True" required> True
+                            </li>
+                            <li>
+                                <input type="radio" name="answer_{{ question.id }}" value="False" required> False
+                            </li>
+                        {% elif question.question_type == 'SA' %}
+                            <li>
+                                <textarea name="answer_{{ question.id }}" rows="3" cols="50" required></textarea>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
             </li>
             {% endfor %}
         </ul>
-
-        <div class="quiz-footer">
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
     </form>
+
+    <div class="quiz-footer">
+        <p id="timer" class="timer">Time Remaining: <span id="time">{{ quiz.Time_allowed }}:00</span></p>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let timeAllowed = {{ quiz.Time_allowed }};
+        let time_in_seconds = timeAllowed * 60;
+        let timerElement = document.getElementById('time');
+        let form = document.getElementById('quiz-form');
+
+        function startTimer(duration, display) {
+            let timer = duration, minutes, seconds;
+            let countdown = setInterval(function() {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(countdown);
+                    form.submit();
+                }
+            }, 1000);
+        }
+
+        startTimer(time_in_seconds, timerElement);
+
+        form.addEventListener('submit', function() {
+            clearInterval(countdown);
+        });
+    });
+</script>
 
 <style>
     .container {
@@ -93,6 +140,11 @@
         margin-top: 20px;
     }
 
+    .timer {
+        font-size: 18px;
+        color: #d9534f;
+    }
+
     .btn {
         display: inline-block;
         padding: 10px 20px;
@@ -110,4 +162,5 @@
         background-color: #0056b3;
     }
 </style>
+
 {% endblock %}

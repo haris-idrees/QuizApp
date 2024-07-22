@@ -1,166 +1,206 @@
 {% extends 'Student/base.html' %}
 
 {% block content %}
-
 <div class="container">
     <h1>Create Quiz</h1>
+    {% if error %}
+        <p class="error-message">{{ error }}</p>
+    {% endif %}
     <form id="quiz-form" method="post">
         {% csrf_token %}
-        {{ quizform.as_p }}
-        <h2>Add Question</h2>
+        <div class="form-group">
+            {{ quizform.as_p }}
+        </div>
         <div id="questions_formset">
             {{ question_formset.management_form }}
             {% for form in question_formset %}
-                <div class="question-form">
+                <div class="question-form form-group">
+                    <h2>Add Question</h2>
                     {{ form.as_p }}
-                    <button type="button" class="remove-question">Remove Question</button>
-                </div>
-                <div id="options_formset">
-                    {{ options_formset.management_form }}
-                    {% for option_form in options_formset %}
-                        <div class="option-form">
-                            {{ option_form.as_p }}
-                            <button type="button" class="remove-option">Remove Option</button>
+                    <div id="options-container">
+                        <div class="option-group">
+                            <label for="option_text">Answer Option: </label>
+                            <input class="form-control option_input" type="text" name="questions-{{ forloop.counter0 }}-option_text" id="0">
                         </div>
-                    {% endfor %}
+                    </div>
+                    <br>
+                    <button type="button" class="btn btn-primary add-option">Add Option</button>
                 </div>
             {% endfor %}
-        <button type="button" id="add-option">Add Option</button>
         </div>
-        <button type="button" id="add-question">Add Question</button>
-        <button type="submit">Save</button>
+        <button type="button" id="add-question" class="btn btn-primary">Add Question</button>
+        <button type="submit" class="btn btn-success">Save</button>
     </form>
 </div>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let questionForms = document.querySelectorAll(".question-form");
+        let questionContainer = document.querySelector("#questions_formset");
+        let addQuestionButton = document.querySelector("#add-question");
+        let totalQuestionForms = document.querySelector("#id_questions-TOTAL_FORMS");
+
+        let option_field = document.querySelector('.option_input');
+        console.log(option_field.name)
+
+        let addOptionButton = document.querySelector('.add-option');
+        addOptionButton.addEventListener('click', addOption)
+
+        function addOption(button) {
+            let questionForm = button.closest('.question-form');
+            let optionContainer = questionForm.querySelector('#options-container');
+            let optionFields = optionContainer.querySelectorAll('.option_input');
+            let newField = optionFields[0].cloneNode(true);
+
+            newField.value = '';
+
+            optionContainer.appendChild(newField);
+        }
 
 
-document.addEventListener('DOMContentLoaded', function() {
-    let questionForms = document.querySelectorAll(".question-form");
-    let question_container = document.querySelector("#questions_formset");
-    let addQuestionButton = document.querySelector("#add-question");
-    let totalQuestionForms = document.querySelector("#id_questions-TOTAL_FORMS");
+        if (!totalQuestionForms) {
+            console.error("Element with id 'id_questions-TOTAL_FORMS' not found.");
+            return;
+        }
 
+        let questionFormNum = questionForms.length - 1;
+        addQuestionButton.addEventListener('click', addQuestionForm);
 
-    let optionForms = document.querySelectorAll(".option-form");
-    let option_container = document.querySelector("#options_formset");
-    let addOptionButton = document.querySelector("#add-option");
-    let totalOptionForms = document.querySelector("#id_options-TOTAL_FORMS");
+        function addQuestionForm(e) {
+            e.preventDefault();
+            let newForm = questionForms[0].cloneNode(true);
+            let formRegex = /questions-(\d+)-/g;
 
-    if (!totalQuestionForms) {
-        console.error("Element with id 'id_questions-TOTAL_FORMS' not found.");
-        return;
-    }
+            questionFormNum++;
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `questions-${questionFormNum}-`);
 
-    if (!totalOptionForms) {
-        console.error("Element with id 'id_options-TOTAL_FORMS' not found.");
-        return;
-    }
+            let formFields = newForm.querySelectorAll('input, select, textarea, label');
 
-    let QuestionformNum = questionForms.length - 1;
-    addQuestionButton.addEventListener('click', addQuestionForm);
+            console.log('Question Fields')
+            formFields.forEach(function(field) {
+                if (field.id) {
+                    field.id = field.id.replace(formRegex, `questions-${questionFormNum}-`);
+                    console.log('field id', field.id, field.name)
+                }
+                if (field.name) {
+                    field.name = field.name.replace(formRegex, `questions-${questionFormNum}-`);
+                }
+                if (field.htmlFor) {
+                    field.htmlFor = field.htmlFor.replace(formRegex, `questions-${questionFormNum}-`);
+                }
+            });
+            console.log('Question added')
+            let optionContainer = newForm.querySelector('#options-container');
+            optionContainer.innerHTML = '';
 
-    let OptionformNum = optionForms.length - 1;
-    addOptionButton.addEventListener('click', addOptionForm);
+            let initialOptionField = document.createElement('div');
+            initialOptionField.classList.add('option-group');
+            initialOptionField.innerHTML = `
+                <label for="option_text">Answer Option: </label>
+                <input class="form-control option_input" type="text" name="questions-${questionFormNum}-option_text" id="${questionFormNum}_option_0">
+            `;
+        optionContainer.appendChild(initialOptionField);
 
+            questionContainer.appendChild(newForm);
+            totalQuestionForms.setAttribute('value', `${questionFormNum + 1}`);
+        }
 
-    function addQuestionForm(e) {
-        e.preventDefault();
-
-        let newForm = questionForms[0].cloneNode(true);
-        let formRegex = /questions-(\d+)-/g;
-
-        QuestionformNum++;
-        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `questions-${QuestionformNum}-`);
-
-        // Update the ID and name attributes of the new form fields
-        let formFields = newForm.querySelectorAll('input, select, textarea, label');
-        formFields.forEach(function(field) {
-            if (field.id) {
-                console.log(`Updating field id from ${field.id} to ${field.id.replace(formRegex, `questions-${QuestionformNum}-`)}`);
-                field.id = field.id.replace(formRegex, `questions-${QuestionformNum}-`);
-            }
-            if (field.name) {
-                console.log(`Updating field name from ${field.name} to ${field.name.replace(formRegex, `questions-${QuestionformNum}-`)}`);
-                field.name = field.name.replace(formRegex, `questions-${QuestionformNum}-`);
-            }
-            if (field.htmlFor) { // Update label 'for' attributes
-                console.log(`Updating label for from ${field.htmlFor} to ${field.htmlFor.replace(formRegex, `questions-${QuestionformNum}-`)}`);
-                field.htmlFor = field.htmlFor.replace(formRegex, `questions-${QuestionformNum}-`);
-            }
-        });
-
-        // Add remove button event listener
-        newForm.querySelector('.remove-question').addEventListener('click', removeQuestionForm);
-
-        question_container.appendChild(newForm);
-
-        totalQuestionForms.setAttribute('value', `${QuestionformNum + 1}`);
-    }
-
-    function addOptionForm(e) {
-        e.preventDefault();
-
-        let newForm = optionForms[0].cloneNode(true);
-        let formRegex = /options-(\d+)-/g;
-
-        OptionformNum++;
-        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `options-${OptionformNum}-`);
-
-        // Update the ID and name attributes of the new form fields
-        let formFields = newForm.querySelectorAll('input, select, textarea, label');
-        formFields.forEach(function(field) {
-            if (field.id) {
-                console.log(`Updating field id from ${field.id} to ${field.id.replace(formRegex, `options-${OptionformNum}-`)}`);
-                field.id = field.id.replace(formRegex, `options-${OptionformNum}-`);
-            }
-            if (field.name) {
-                console.log(`Updating field name from ${field.name} to ${field.name.replace(formRegex, `options-${OptionformNum}-`)}`);
-                field.name = field.name.replace(formRegex, `options-${OptionformNum}-`);
-            }
-            if (field.htmlFor) { // Update label 'for' attributes
-                console.log(`Updating label for from ${field.htmlFor} to ${field.htmlFor.replace(formRegex, `options-${OptionformNum}-`)}`);
-                field.htmlFor = field.htmlFor.replace(formRegex, `options-${OptionformNum}-`);
-            }
-        });
-
-        // Add remove button event listener
-        newForm.querySelector('.remove-option').addEventListener('click', removeOptionForm);
-
-        option_container.appendChild(newForm);
-
-        totalOptionForms.setAttribute('value', `${OptionformNum + 1}`);
-    }
-
-    function removeQuestionForm(e) {
-        e.preventDefault();
-        let formToRemove = e.target.closest('.question-form');
-        formToRemove.remove();
-
-        // Update total forms count
-        let currentForms = document.querySelectorAll('.question-form').length;
-        totalQuestionForms.setAttribute('value', `${currentForms}`);
-    }
-
-    function removeOptionForm(e) {
-        e.preventDefault();
-        let formToRemove = e.target.closest('.option-form');
-        formToRemove.remove();
-
-        // Update total forms count
-        let currentForms = document.querySelectorAll('.option-form').length;
-        totalOptionForms.setAttribute('value', `${currentForms}`);
-    }
-
-    // Add remove event listeners to initial forms
-    questionForms.forEach(function(form) {
-        form.querySelector('.remove-question').addEventListener('click', removeQuestionForm);
+        questionContainer.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('add-option')) {
+            addOption(e.target);
+        }
     });
 
-    // Add remove event listeners to initial forms
-    optionForms.forEach(function(form) {
-        form.querySelector('.remove-option').addEventListener('click', removeOptionForm);
     });
-});
 </script>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        width: 80%;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin-top: 50px;
+        border-radius: 8px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 2em;
+        color: #343a40;
+    }
+
+    h2 {
+        font-size: 1.5em;
+        color: #343a40;
+    }
+
+    .error-message {
+        color: red;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .question-form,
+    .option-form {
+        background-color: #f1f1f1;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+
+    .btn {
+        display: inline-block;
+        font-weight: 400;
+        color: #212529;
+        text-align: center;
+        vertical-align: middle;
+        user-select: none;
+        background-color: #007bff;
+        border: 1px solid #007bff;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: 0.25rem;
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn:hover {
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .btn:focus, .btn.focus {
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
 
 {% endblock %}
