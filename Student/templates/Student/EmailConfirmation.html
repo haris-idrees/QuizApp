@@ -1,6 +1,10 @@
 {% extends 'Student/base.html' %}
 
+{% load static %}
+
 {% block content %}
+
+<link rel="stylesheet" href="{% static 'css/EmailConfirmation.css' %}">
 
 <div class="container mt-5 text-center">
     <p>We have sent you an email with the instructions to reset your Password. Check your Mailbox Plz!</p>

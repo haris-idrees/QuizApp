@@ -1,6 +1,10 @@
 {% extends 'Student/base.html' %}
 
+{% load static %}
+
 {% block content %}
+
+   <link rel="stylesheet" href="{% static 'css/Students.css' %}">
 
 <h1 class="text-center">Welcome Admin</h1>
 <div class="container">
@@ -26,28 +30,5 @@
     <a class="btn btn-primary" href="http://127.0.0.1:8000/register/">Add New Student</a>
 </div>
 
-    <style>
-.card {
-    border: 1px solid #ddd;
-    border-radius: .25rem;
-    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
-}
-
-.card-body {
-    padding: 1.25rem;
-}
-
-.card-title {
-    margin-bottom: .75rem;
-}
-
-.card-text {
-    margin-bottom: .5rem;
-}
-
-.btn {
-    margin-right: .5rem;
-}
-</style>
 
 {% endblock %}

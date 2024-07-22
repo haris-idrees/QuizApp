@@ -1,6 +1,10 @@
 {% extends 'Student/base.html' %}
 
+{% load static %}
+
 {% block content %}
+
+<link rel="stylesheet" href="{% static 'css/QuizDetails.css' %}">
 
 <div class="container">
     <h2 class="quiz_title"><strong>Quiz Title:</strong> {{ quiz.title }}</h2>
@@ -61,103 +65,5 @@
         </div>
     </div>
 </div>
-
-<style>
-    .container {
-        margin-top: 15px;
-        max-width: 800px;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-    }
-
-    .quiz_title {
-        color: #333;
-    }
-
-    .question-list {
-        list-style-type: none;
-        padding: 0;
-    }
-
-    .question-item {
-        margin-bottom: 20px;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        background-color: #fff;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .question-statement {
-        font-size: 18px;
-        margin-bottom: 10px;
-        color: #333;
-    }
-
-    .question-details {
-        font-size: 14px;
-        color: #666;
-    }
-
-    .answer-options {
-        margin-top: 5px;
-        padding-left: 20px;
-        list-style-type: disc;
-        color: #888;
-    }
-
-    .quiz-footer {
-        text-align: center;
-        margin-top: 20px;
-        align-content: center;
-        align-items: center;
-    }
-
-    .btn {
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn:hover {
-        background-color: #0056b3;
-    }
-
-    .btn-block {
-        display: block;
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .btn-update {
-        margin-top: 10px;
-        margin-right: 20px;
-        padding: 10px 20px;
-        background-color: #28a745;
-        color: #ffffff;
-        text-decoration: none;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn-update:hover {
-        background-color: #218838;
-        color: aliceblue;
-        text-decoration: none;
-    }
-</style>
 
 {% endblock %}

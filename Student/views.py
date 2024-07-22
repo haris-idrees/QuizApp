@@ -1,20 +1,17 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from Student.models import Student
 from .serializers import StudentSerializer
 from django.contrib.auth import login, logout
-from .models import Student
-from Admin.models import Admin
-from Quiz.models import *
+from Quiz.models import Quiz, Question, StudentQuizAttempt, StudentAnswer, AnswerOptions
 from rest_framework import viewsets
 from django.views import View
-from Admin.serializers import *
 from django.core.mail import send_mail, EmailMessage
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from django.conf import settings
 from django.db import transaction
 
 

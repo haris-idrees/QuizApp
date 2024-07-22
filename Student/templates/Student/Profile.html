@@ -1,6 +1,11 @@
 {% extends 'Student/base.html' %}
 
+{% load static %}
+
 {% block content %}
+
+<link rel="stylesheet" href="{% static 'css/Profile.css' %}">
+
     <div class="profile-container">
         <div class="profile-header">
             <h1>{{ student.username }}'s Profile</h1>
@@ -60,56 +65,4 @@
         </div>
     </div>
 
-    <style>
-
-    .profile-container {
-        width: 80%;
-        margin: 0 auto;
-        background-color: #fff;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        margin-top: 50px;
-    }
-
-    .profile-header {
-        text-align: center;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 20px;
-        margin-bottom: 20px;
-    }
-
-    .profile-info,
-    {
-        margin-bottom: 20px;
-    }
-
-    .profile-info h2,
-    .profile-quizzes h2,
-    .profile-attempts h2 {
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 10px;
-        margin-bottom: 10px;
-    }
-
-    ul {
-        list-style-type: none;
-        padding: 0;
-    }
-
-    .temp {
-        justify-content: center;
-    }
-
-    .list-title {
-        padding: 10px;
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        margin-bottom: 10px;
-    }
-
-    li:nth-child(odd) {
-        background-color: #f1f1f1;
-    }
-
-</style>
 {% endblock %}
