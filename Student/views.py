@@ -13,6 +13,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.db import transaction
+from django.conf import settings
 
 
 def home(request):
@@ -89,29 +90,31 @@ class ForgotPassword(View):
 
     def post(self, request):
         email = request.POST.get('email')
-        student = Student.objects.get(email=email)
-        if student:
-            context = {
-                'protocol': 'http',
-                'domain': '127.0.0.1:8000',
-                'uid': urlsafe_base64_encode(force_bytes(student.pk)),
-                'token': default_token_generator.make_token(student)
-            }
-            html_content = render_to_string('Student/password_reset_email.html', context)
-            text_content = strip_tags(html_content)
+        try:
+            student = Student.objects.get(email=email)
+            if student:
+                context = {
+                    'protocol': 'http',
+                    'domain': '127.0.0.1:8000',
+                    'uid': urlsafe_base64_encode(force_bytes(student.pk)),
+                    'token': default_token_generator.make_token(student)
+                }
+                html_content = render_to_string('Student/password_reset_email.html', context)
+                text_content = strip_tags(html_content)
 
-            email = EmailMessage(
-                subject='Reset Password',
-                body=text_content,
-                from_email=settings.EMAIL_HOST_USER,
-                to=[email],
-            )
-            email.content_subtype = 'html'
+                email = EmailMessage(
+                    subject='Reset Password',
+                    body=text_content,
+                    from_email=settings.EMAIL_HOST_USER,
+                    to=[email],
+                )
+                email.content_subtype = 'html'
 
-            email.send()
+                email.send()
 
-            return render(request, 'Student/EmailConfirmation.html')
-        else:
+                return render(request, 'Student/EmailConfirmation.html')
+
+        except Exception as e:
             error = 'You are not a registered User'
             return render(request, 'Student/RegisterStudent.html', {'error': error})
 
@@ -263,3 +266,4 @@ class AttemptQuiz(View):
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+
