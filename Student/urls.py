@@ -2,7 +2,7 @@ from django.urls import path, include
 from . views import (home,
                      StudentViewSet, RegisterStudent, LoginStudent, Profile,
                      logout_student, ForgotPassword,
-                     EmailConfirmation, SetPassword, ResetSuccess, AttemptQuiz
+                     EmailConfirmation, SetPassword, ResetSuccess, AttemptQuiz, ViewAttempt
                      )
 from Quiz.views import QuizViewSet, QuestionViewSet, StudentAttemptViewSet,OptionViewSet,StudentAnswerViewSet
 from Admin.views import AdminViewSet
@@ -28,6 +28,7 @@ urlpatterns = [
     path('logout/', logout_student, name='logout'),
     # path('manager/', home, name='manager'),
     path('AttemptQuiz/<int:pk>/', AttemptQuiz.as_view(), name='AttemptQuiz'),
+    path('ViewAttempt/<int:quiz_id>', ViewAttempt.as_view(), name='view_attempt'),
     path('password_reset/', ForgotPassword.as_view(), name='forgot_password'),
     path('password_reset_done/', EmailConfirmation.as_view(), name='password_reset_done'),
     path('password_reset_confirm/<uidb64>/<token>/', SetPassword.as_view(), name='password_reset_confirm'),

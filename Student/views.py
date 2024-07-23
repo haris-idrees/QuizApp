@@ -263,6 +263,25 @@ class AttemptQuiz(View):
             return redirect('home')
 
 
+class ViewAttempt(View):
+    def get(self, request, quiz_id):
+        if request.user.is_authenticated and request.user.is_student:
+            student = Student.objects.get(id=request.user.id)
+            quiz = Quiz.objects.get(pk=quiz_id)
+            attempt = StudentQuizAttempt.objects.get(student=student, quiz=quiz)
+            answers = StudentAnswer.objects.filter(attempt=attempt)
+            questions = Question.objects.filter(quiz=quiz)
+            question_options = {question.id: AnswerOptions.objects.filter(question=question) for question in questions}
+            return render(request, 'Student/ViewAttempt.html', {
+                'student': student,
+                'quiz': quiz,
+                'attempt': attempt,
+                'questions': questions,
+                'question_options': question_options,
+                'attempted_answers': answers,
+            })
+
+
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer

@@ -51,9 +51,17 @@
                     <div class="card-body">
                         {% if attempts %}
                             {% for attempt in attempts %}
-                                <div class="quiz-item">
-                                    <p class="quiz-title">{{ attempt.quiz.title }}</p>
-                                    <p class="text-muted">Score: {{ attempt.attempt_score }} / {{ attempt.quiz.Total_score }}</p>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="quiz-item">
+                                            <p class="quiz-title">{{ attempt.quiz.title }}</p>
+                                            <p class="text-muted">Score: {{ attempt.attempt_score }} / {{ attempt.quiz.Total_score }}</p>
+
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <a class="btn btn-success" href="{% url 'view_attempt' quiz_id=attempt.quiz.id %}">View Attempt</a>
+                                    </div>
                                 </div>
                             {% endfor %}
                         {% else %}
@@ -64,5 +72,11 @@
             </div>
         </div>
     </div>
+
+    <style>
+        .profile-container{
+            background-color: #f1eeee;
+        }
+    </style>
 
 {% endblock %}

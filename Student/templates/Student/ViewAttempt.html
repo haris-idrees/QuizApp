@@ -1,0 +1,82 @@
+{% extends 'Student/base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/ViewAttempt.css' %}">
+
+<div class="container">
+    <h2 class="quiz_title"><strong> {{ quiz.title }} </strong></h2>
+
+    <!-- Quiz Details -->
+    <div class="quiz-details">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Difficulty Level:</strong> {{ quiz.get_difficulty_level_display }}</p>
+                <p><strong>Total Marks:</strong> {{ quiz.Total_score }}</p>
+                <p><strong>Obtained Marks:</strong> {{ attempt.attempt_score }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Attempted on: </strong> {{ attempt.attempt_date }}</p>
+                <p><strong>Time Allowed:</strong> {{ quiz.Time_allowed }} minutes</p>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Questions Section -->
+    <h3>Questions:</h3>
+    <ul class="question-list">
+        {% for question in questions %}
+        <li class="question-item">
+            <div>
+                <div class="question-statement">{{ question.question_statement }}</div>
+                <div class="question-details">
+
+                    {% if question.correct_answer %}
+                        <p><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
+                    {% endif %}
+
+                    <p><strong>Your Answer:</strong></p>
+                    {% for answer in attempted_answers %}
+                        {% if answer.question == question %}
+                            <div class="answer-block {% if answer.score == 1 %}correct-answer{% else %}incorrect-answer{% endif %}">
+                                <p>{{ answer.answer }}</p>
+                                <i class="icon {% if answer.score == 1 %}fas fa-check-circle{% else %}fas fa-times-circle{% endif %}"></i>
+                                {% if answer.score == 1 %}(Correct){% else %}(Incorrect){% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if question_options %}
+                        <p><strong>Answer Options:</strong></p>
+                        <ul class="answer-options">
+                            {% for key, value in question_options.items %}
+                                {% if key == question.id %}
+                                    {% for option in value %}
+                                        <li>{{ option.option_text }}</li>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No Options for this question</p>
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="quiz-footer">
+        <div class="row justify-content-center">
+            <div class="col-md-3">
+                <a href="{% url 'profile' pk=student.id %}" class="btn btn-primary btn-block">Back to Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
