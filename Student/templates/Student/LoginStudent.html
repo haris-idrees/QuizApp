@@ -5,6 +5,8 @@ Login|
 
 {% load static %}
 
+{% load socialaccount %}
+
 {% block content %}
 
 <link rel="stylesheet" href="{% static 'css/LoginStudent.css' %}">
@@ -25,6 +27,7 @@ Login|
                 <input class="inputfield" type="password" id="password" placeholder="********" name="password">
             </div>
             <button class="btn btn-primary" type="submit">Sign In</button>
+            <a class="btn btn-primary" href="{% provider_login_url 'google' %}?next=/">Login with Google</a>
             <div class="form-footer text-center">
                 <span class="text-muted">Do not have an account?</span>
                 <br>
